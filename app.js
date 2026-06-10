@@ -13,11 +13,130 @@ const API_URL = (window.location.hostname === 'localhost' || window.location.hos
 
 // Mock Data Fallback (to ensure UI works even if server is slow/down)
 const MOCK_PRODUCTS = [
-    { id: 1, name: "Premium Oud", description: "Deep, mysterious woody scent.", price: 4500, offer_price: 3999, category: "perfumes", image_url: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&q=60" },
-    { id: 2, name: "Royal Saffron", description: "Spicy and floral luxury.", price: 3200, offer_price: 2800, category: "perfumes", image_url: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&q=60" },
-    { id: 3, name: "Velvet Slippers", description: "Pure comfort for your feet.", price: 1800, offer_price: 1500, category: "slippers", image_url: "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=400&q=60" },
-    { id: 4, name: "Classic Accessories", description: "Complete your look.", price: 999, offer_price: 799, category: "accessories", image_url: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400&q=60" }
+    { id: 1, name: "Premium Oud", description: "Deep, mysterious woody scent.", price: 4500, offer_price: 3999, category: "perfumes", image_url: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&q=80", rating: 4.8 },
+    { id: 2, name: "Royal Saffron", description: "Spicy and floral luxury.", price: 3200, offer_price: 2800, category: "perfumes", image_url: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&q=80", rating: 4.6 },
+    { id: 3, name: "Velvet Slippers", description: "Pure comfort for your feet.", price: 1800, offer_price: 1500, category: "slippers", image_url: "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=800&q=80", rating: 4.7 },
+    { id: 4, name: "Classic Accessories", description: "Complete your look.", price: 999, offer_price: 799, category: "accessories", image_url: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=800&q=80", rating: 4.5 }
 ];
+
+const PRODUCT_EXTRAS = {
+    1: {
+        long_description: "Premium Oud is crafted from aged agarwood resin, delivering a rich, smoky base with hints of amber and sandalwood. Long-lasting projection makes it perfect for evening wear and special occasions.",
+        gallery: [
+            "https://images.unsplash.com/photo-1541643600914-78b084683601?w=800&q=80",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800&q=80",
+            "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=800&q=80"
+        ],
+        video_url: "https://assets.mixkit.co/videos/preview/mixkit-woman-spraying-perfume-4029-large.mp4",
+        review_count: 128,
+        reviews: [
+            { author: "Ananya R.", rating: 5, date: "2026-02-10", text: "Absolutely luxurious scent. Lasts all day and gets compliments everywhere.", photos: ["https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=300&q=60"] },
+            { author: "Rahul M.", rating: 5, date: "2026-01-28", text: "Worth every rupee. The oud note is authentic and not overpowering.", photos: [] },
+            { author: "Sneha K.", rating: 4, date: "2026-01-15", text: "Beautiful packaging and fast delivery. Slightly strong for daytime.", photos: [] }
+        ]
+    },
+    2: {
+        long_description: "Royal Saffron blends golden saffron threads with rose petals and white musk. A warm, opulent fragrance that feels regal without being heavy.",
+        gallery: [
+            "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800&q=80",
+            "https://images.unsplash.com/photo-1595425970375-c89af49b5a70?w=800&q=80",
+            "https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=800&q=80"
+        ],
+        video_url: "https://assets.mixkit.co/videos/preview/mixkit-woman-applying-perfume-4027-large.mp4",
+        review_count: 94,
+        reviews: [
+            { author: "Divya P.", rating: 5, date: "2026-02-05", text: "My signature scent now. The saffron note is so unique!", photos: ["https://images.unsplash.com/photo-1595425970375-c89af49b5a70?w=300&q=60"] },
+            { author: "Arjun V.", rating: 4, date: "2026-01-20", text: "Great gift for my wife. She loves the floral warmth.", photos: [] }
+        ]
+    },
+    3: {
+        long_description: "Velvet Slippers feature memory-foam cushioning with a soft suede upper. Designed for all-day comfort at home without compromising on style.",
+        gallery: [
+            "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=800&q=80",
+            "https://images.unsplash.com/photo-1603487742131-4163ec6cde8b?w=800&q=80",
+            "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&q=80"
+        ],
+        video_url: "https://assets.mixkit.co/videos/preview/mixkit-feet-in-comfortable-slippers-4030-large.mp4",
+        review_count: 76,
+        reviews: [
+            { author: "Meera S.", rating: 5, date: "2026-02-08", text: "Like walking on clouds. The velvet finish feels premium.", photos: ["https://images.unsplash.com/photo-1603487742131-4163ec6cde8b?w=300&q=60"] },
+            { author: "Karan D.", rating: 5, date: "2026-01-30", text: "Best slippers I've owned. True to size and very durable.", photos: [] }
+        ]
+    },
+    4: {
+        long_description: "Classic Accessories set includes curated pieces to elevate any outfit — from minimalist chains to statement rings, finished in hypoallergenic plating.",
+        gallery: [
+            "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=800&q=80",
+            "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80",
+            "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&q=80"
+        ],
+        video_url: "https://assets.mixkit.co/videos/preview/mixkit-hands-holding-a-golden-necklace-4026-large.mp4",
+        review_count: 52,
+        reviews: [
+            { author: "Isha T.", rating: 5, date: "2026-02-01", text: "Stunning quality for the price. Photos don't do justice!", photos: ["https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300&q=60"] },
+            { author: "Nikhil B.", rating: 4, date: "2026-01-18", text: "Bought for my sister. She loved the packaging and finish.", photos: [] }
+        ]
+    }
+};
+
+window.getPageCategory = function() {
+    if (window.category) return window.category;
+    const path = window.location.pathname;
+    if (path.includes('perfumes')) return 'perfumes';
+    if (path.includes('slippers')) return 'slippers';
+    if (path.includes('accessories')) return 'accessories';
+    return null;
+};
+
+window.applyPageFilterContext = function() {
+    const pageCategory = window.getPageCategory();
+    if (!pageCategory) return;
+
+    document.querySelectorAll('.filter-tag[data-filter]').forEach(tag => tag.remove());
+    document.querySelectorAll('.filter-drawer .filter-group').forEach(group => {
+        if (group.querySelector('[data-filter]')) group.remove();
+    });
+
+    window.currentFilters.category = pageCategory;
+};
+
+window.mergeProductDetails = function(product) {
+    const extras = PRODUCT_EXTRAS[product.id] || {};
+    return {
+        ...product,
+        ...extras,
+        gallery: extras.gallery || [product.image_url],
+        reviews: extras.reviews || [],
+        review_count: extras.review_count || 0,
+        long_description: extras.long_description || product.description,
+        rating: product.rating || 4.5
+    };
+};
+
+window.getProductById = async function(id) {
+    const mock = MOCK_PRODUCTS.find(p => String(p.id) === String(id));
+    try {
+        const res = await fetchWithTimeout(`${API_URL}/api/products/${id}`, { timeout: 2000 });
+        if (res.ok) {
+            const product = await res.json();
+            return window.mergeProductDetails(product);
+        }
+    } catch (e) { /* fallback to mock */ }
+    if (mock) return window.mergeProductDetails(mock);
+    return null;
+};
+
+window.renderStarRating = function(rating) {
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= full) html += '<i class="fas fa-star"></i>';
+        else if (i === full + 1 && half) html += '<i class="fas fa-star-half-alt"></i>';
+        else html += '<i class="far fa-star"></i>';
+    }
+    return html;
+};
 
 // Client-side cache for products
 const productCache = new Map();
@@ -206,14 +325,20 @@ window.clearFilters = function() {
     });
     
     window.renderProducts();
-    if (document.getElementById('filter-drawer').classList.contains('active')) {
+    const drawer = document.getElementById('filter-drawer');
+    if (drawer && drawer.classList.contains('active')) {
         window.toggleFilterDrawer();
     }
 }
 
 window.setupFilters = function() {
+    const filterBar = document.querySelector('.mobile-filter-section');
+    if (!filterBar) return;
+
     const drawer = document.getElementById('filter-drawer');
     if (drawer) drawer.setAttribute('aria-hidden', 'true');
+
+    window.applyPageFilterContext();
 
     // Horizontal Tag Clicks
     document.querySelectorAll('.filter-tag').forEach(tag => {
@@ -358,24 +483,164 @@ window.renderToDOM = function(products, container, category) {
         const escapedName = p.name.replace(/'/g, "\\'");
 
         return `
-        <div class="product-card">
-            <div class="product-img">
-                <img src="${optimizedImg}" alt="${p.name}" loading="lazy" width="400" height="400">
-                <button class="add-to-cart-overlay" onclick="window.addToCart('${p.id}', '${escapedName}', ${p.offer_price || p.price}, '${optimizedImg}')">
-                    <i class="fas fa-plus"></i> ADD TO BAG
-                </button>
-            </div>
-            <div class="product-info">
-                <h3>${p.name}</h3>
-                <p>${p.description}</p>
-                <div class="product-price">
-                    <span class="current-price">₹${p.offer_price || p.price}</span>
-                    ${p.offer_price && p.offer_price < p.price ? `<span class="original-price" style="text-decoration: line-through; color: #666; font-size: 0.9rem; margin-left: 10px;">₹${p.price}</span>` : ''}
+        <a href="product.html?id=${p.id}" class="product-card-link">
+            <div class="product-card">
+                <div class="product-img">
+                    <img src="${optimizedImg}" alt="${p.name}" loading="lazy" width="400" height="400">
+                    <button class="add-to-cart-overlay" onclick="event.preventDefault(); event.stopPropagation(); window.addToCart('${p.id}', '${escapedName}', ${p.offer_price || p.price}, '${optimizedImg}')">
+                        <i class="fas fa-plus"></i> ADD TO BAG
+                    </button>
+                </div>
+                <div class="product-info">
+                    <h3>${p.name}</h3>
+                    <p>${p.description}</p>
+                    <div class="product-price">
+                        <span class="current-price">₹${p.offer_price || p.price}</span>
+                        ${p.offer_price && p.offer_price < p.price ? `<span class="original-price" style="text-decoration: line-through; color: #666; font-size: 0.9rem; margin-left: 10px;">₹${p.price}</span>` : ''}
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
     `}).join('');
 }
+
+window.initProductPage = async function() {
+    const container = document.getElementById('product-detail-content');
+    if (!container) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+    if (!productId) {
+        container.innerHTML = '<p class="pdp-error">Product not found.</p>';
+        return;
+    }
+
+    const product = await window.getProductById(productId);
+    if (!product) {
+        container.innerHTML = '<p class="pdp-error">Product not found.</p>';
+        return;
+    }
+
+    document.title = `Life Style | ${product.name}`;
+    const categoryPage = { perfumes: 'perfumes.html', slippers: 'slippers.html', accessories: 'accessories.html' };
+    const breadcrumbCat = product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1) : 'Shop';
+    const breadcrumbLink = categoryPage[product.category] || 'collections.html';
+    const price = product.offer_price || product.price;
+    const savedReviews = JSON.parse(localStorage.getItem(`lifestyle_reviews_${productId}`) || '[]');
+    const allReviews = [...(product.reviews || []), ...savedReviews];
+    const avgRating = allReviews.length
+        ? (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1)
+        : product.rating;
+
+    const galleryHtml = product.gallery.map((img, i) =>
+        `<button type="button" class="pdp-thumb${i === 0 ? ' active' : ''}" data-img="${img}" aria-label="View image ${i + 1}">
+            <img src="${img.replace(/w=\d+/, 'w=150').replace(/q=\d+/, 'q=60')}" alt="">
+        </button>`
+    ).join('');
+
+    const reviewsHtml = allReviews.length ? allReviews.map(r => `
+        <div class="pdp-review-card">
+            <div class="pdp-review-header">
+                <strong>${r.author}</strong>
+                <span class="pdp-review-stars">${window.renderStarRating(r.rating)}</span>
+                <span class="pdp-review-date">${r.date}</span>
+            </div>
+            <p>${r.text}</p>
+            ${r.photos && r.photos.length ? `<div class="pdp-review-photos">${r.photos.map(ph => `<img src="${ph}" alt="Customer photo">`).join('')}</div>` : ''}
+        </div>
+    `).join('') : '<p class="pdp-no-reviews">No reviews yet. Be the first!</p>';
+
+    container.innerHTML = `
+        <nav class="pdp-breadcrumb">
+            <a href="index.html">Home</a> <span>/</span>
+            <a href="${breadcrumbLink}">${breadcrumbCat}</a> <span>/</span>
+            <span>${product.name}</span>
+        </nav>
+
+        <div class="pdp-layout">
+            <div class="pdp-media">
+                <div class="pdp-main-image">
+                    <img id="pdp-main-img" src="${product.gallery[0]}" alt="${product.name}">
+                </div>
+                <div class="pdp-thumbs">${galleryHtml}</div>
+                ${product.video_url ? `
+                <div class="pdp-video-section">
+                    <h3>PRODUCT VIDEO</h3>
+                    <video class="pdp-video" controls playsinline poster="${product.gallery[0]}">
+                        <source src="${product.video_url}" type="video/mp4">
+                    </video>
+                </div>` : ''}
+            </div>
+
+            <div class="pdp-info">
+                <span class="pdp-category-tag">${breadcrumbCat}</span>
+                <h1>${product.name}</h1>
+                <div class="pdp-rating-row">
+                    <span class="pdp-stars">${window.renderStarRating(Number(avgRating))}</span>
+                    <span class="pdp-rating-text">${avgRating} / 5 (${allReviews.length} reviews)</span>
+                </div>
+                <div class="pdp-price-row">
+                    <span class="pdp-price">₹${price}</span>
+                    ${product.offer_price && product.offer_price < product.price ? `<span class="pdp-original-price">₹${product.price}</span>` : ''}
+                </div>
+                <p class="pdp-description">${product.long_description}</p>
+                <button class="btn btn-primary pdp-add-btn" onclick="window.addToCart('${product.id}', '${product.name.replace(/'/g, "\\'")}', ${price}, '${product.image_url}')">
+                    <i class="fas fa-shopping-bag"></i> ADD TO BAG
+                </button>
+            </div>
+        </div>
+
+        <section class="pdp-reviews-section">
+            <h2>CUSTOMER REVIEWS & FEEDBACK</h2>
+            <div class="pdp-reviews-grid">
+                <div class="pdp-reviews-list">${reviewsHtml}</div>
+                <div class="pdp-review-form-card">
+                    <h3>WRITE A REVIEW</h3>
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" class="brutal-input" id="review-author" placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <select class="brutal-select" id="review-rating">
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Feedback</label>
+                        <textarea class="brutal-input" id="review-text" rows="4" placeholder="Share your experience..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" id="submit-review-btn" style="width:100%;">SUBMIT REVIEW</button>
+                </div>
+            </div>
+        </section>
+    `;
+
+    container.querySelectorAll('.pdp-thumb').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+            document.getElementById('pdp-main-img').src = thumb.dataset.img;
+            container.querySelectorAll('.pdp-thumb').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+        });
+    });
+
+    document.getElementById('submit-review-btn').addEventListener('click', () => {
+        const author = document.getElementById('review-author').value.trim();
+        const rating = Number(document.getElementById('review-rating').value);
+        const text = document.getElementById('review-text').value.trim();
+        if (!author || !text) return alert('Please enter your name and feedback.');
+        const review = { author, rating, text, date: new Date().toISOString().slice(0, 10), photos: [] };
+        const key = `lifestyle_reviews_${productId}`;
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.unshift(review);
+        localStorage.setItem(key, JSON.stringify(existing));
+        window.initProductPage();
+    });
+};
 
 // --- Cart Algorithm (REBUILT FOR RELIABILITY) ---
 window.addToCart = function(id, name, price, image) {
@@ -738,10 +1003,14 @@ window.initApp = function() {
     window.initTheme();
     window.initAuth();
     window.updateCartBadge();
-    window.renderProducts();
     window.renderCartItems();
     window.setupSearch();
-    window.setupFilters(); // Initialize mobile filters
+    if (document.getElementById('product-detail-content')) {
+        window.initProductPage();
+    } else {
+        window.renderProducts();
+        window.setupFilters();
+    }
     window.registerServiceWorker();
     window.setupEventListeners();
     window.checkPaymentStatus();

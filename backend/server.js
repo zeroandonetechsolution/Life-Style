@@ -268,6 +268,16 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const product = await db.get('SELECT * FROM products WHERE id = ?', [req.params.id]);
+        if (!product) return res.status(404).json({ error: 'Product not found' });
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch product' });
+    }
+});
+
 // Payment Routes (Razorpay)
 app.post('/api/payments/razorpay-order', async (req, res) => {
     const { amount, currency = 'INR', receipt } = req.body;

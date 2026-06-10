@@ -1,7 +1,8 @@
-const CACHE_NAME = 'lifestyle-luxury-v3';
+const CACHE_NAME = 'lifestyle-luxury-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/product.html',
   '/style.css',
   '/app.js',
   '/manifest.json'

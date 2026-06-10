@@ -81,20 +81,6 @@
         </div>
     </header>
 
-    <!-- Mobile Quick Filter Bar -->
-    <div class="mobile-filter-section">
-        <button class="filter-icon-btn" id="mobile-filter-open-btn" aria-label="Open Filters">
-            <i class="fas fa-sliders-h"></i>
-        </button>
-        <div class="filter-tag active" data-filter="all">All</div>
-        <div class="filter-tag" data-filter="perfumes">Perfumes</div>
-        <div class="filter-tag" data-filter="slippers">Slippers</div>
-        <div class="filter-tag" data-filter="accessories">Accessories</div>
-        <div class="filter-tag" data-price="0-2000">Under ₹2000</div>
-        <div class="filter-tag" data-price="2000-5000">₹2000 - ₹5000</div>
-        <div class="filter-tag" data-price="5000-plus">Above ₹5000</div>
-    </div>
-
     <!-- Auth Modal -->
     <div class="modal-overlay" id="auth-overlay"></div>
     <div class="auth-modal" id="auth-modal">
@@ -120,46 +106,6 @@
                 <input type="text" id="auth-email" class="brutal-input" placeholder="you@example.com or +91...">
             </div>
             <button class="btn btn-primary" onclick="window.handleSendOTP()">SEND OTP</button>
-        </div>
-    </div>
-
-    <!-- Filter Drawer -->
-    <div class="modal-overlay" id="filter-overlay"></div>
-    <div class="filter-drawer" id="filter-drawer">
-        <div class="filter-drawer-header">
-            <h2>FILTERS</h2>
-            <button class="close-modal-btn" id="close-filter-btn"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="filter-drawer-content">
-            <div class="filter-group">
-                <h3><i class="fas fa-th-large"></i> Categories</h3>
-                <div class="filter-options">
-                    <div class="filter-option active" data-filter="all">All</div>
-                    <div class="filter-option" data-filter="perfumes">Perfumes</div>
-                    <div class="filter-option" data-filter="slippers">Slippers</div>
-                    <div class="filter-option" data-filter="accessories">Accessories</div>
-                </div>
-            </div>
-            <div class="filter-group">
-                <h3><i class="fas fa-tag"></i> Price Range</h3>
-                <div class="filter-options">
-                    <div class="filter-option" data-price="0-1000">Under ₹1000</div>
-                    <div class="filter-option" data-price="1000-3000">₹1000 - ₹3000</div>
-                    <div class="filter-option" data-price="3000-5000">₹3000 - ₹5000</div>
-                    <div class="filter-option" data-price="5000-plus">Above ₹5000</div>
-                </div>
-            </div>
-            <div class="filter-group">
-                <h3><i class="fas fa-star"></i> Customer Reviews</h3>
-                <div class="filter-options">
-                    <div class="filter-option" data-rating="4">4★ & Up</div>
-                    <div class="filter-option" data-rating="3">3★ & Up</div>
-                </div>
-            </div>
-        </div>
-        <div class="filter-drawer-footer">
-            <button class="btn btn-secondary" style="flex: 1;" onclick="window.clearFilters()">CLEAR ALL</button>
-            <button class="btn btn-primary" style="flex: 1;" onclick="window.applyFilters()">APPLY</button>
         </div>
     </div>
 
