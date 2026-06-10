@@ -568,19 +568,77 @@ async function showEditProduct(id) {
                         <option value="accessories" ${product.category === 'accessories' ? 'selected' : ''}>Accessories</option>
                     </select>
                 </div>
+
                 <div class="form-group" style="margin-bottom: 30px;">
-                    <label style="display: block; font-weight: 800; margin-bottom: 8px;">IMAGE URL</label>
-                    <input type="text" id="p-img" class="brutal-input" style="width: 100%; border: 3px solid #000; padding: 12px; font-weight: 700;" value="${product.image_url}">
+                    <label style="display: block; font-weight: 800; margin-bottom: 8px;">IMAGE UPLOAD TYPE</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="btn-img-url" class="btn" onclick="toggleImageSource('url')" style="flex: 1; border: 3px solid #000; padding: 10px; font-weight: 800; background: #FFD100;">URL</button>
+                        <button id="btn-img-file" class="btn" onclick="toggleImageSource('file')" style="flex: 1; border: 3px solid #000; padding: 10px; font-weight: 800; background: #eee;">LOCAL DISK</button>
+                    </div>
+                    
+                    <div id="img-url-container">
+                        <label style="display: block; font-weight: 800; margin-bottom: 8px;">IMAGE URL</label>
+                        <input type="text" id="p-img" class="brutal-input" style="width: 100%; border: 3px solid #000; padding: 12px; font-weight: 700;" value="${product.image_url}">
+                    </div>
+                    
+                    <div id="img-file-container" style="display: none;">
+                        <label style="display: block; font-weight: 800; margin-bottom: 8px;">SELECT IMAGE</label>
+                        <input type="file" id="p-img-file" accept="image/*" class="brutal-input" style="width: 100%; border: 3px solid #000; padding: 12px; font-weight: 700; background: #fff;">
+                        <div id="img-preview" style="margin-top: 10px;">
+                            <p style="font-weight: 700; font-size: 0.8rem; margin-bottom: 5px;">PREVIEW:</p>
+                            <img id="p-img-preview" src="${product.image_url}" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #000;" onerror="this.src='https://via.placeholder.com/100'">
+                        </div>
+                    </div>
                 </div>
+
                 <div style="display: flex; gap: 15px;">
                     <button class="btn btn-primary" style="flex: 1; background: #00E0FF; border: 3px solid #000; padding: 15px; font-weight: 900; cursor: pointer;" onclick="handleEditProduct(${product.id})">UPDATE PRODUCT</button>
                     <button class="btn" style="flex: 1; background: #eee; border: 3px solid #000; padding: 15px; font-weight: 900; cursor: pointer;" onclick="loadProducts()">CANCEL</button>
                 </div>
             </div>
         `;
+
+        // Reset state
+        currentImageSource = 'url';
+        
+        // Add file preview listener
+        document.getElementById('p-img-file')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('p-img-preview').src = e.target.result;
+                    document.getElementById('img-preview').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
     } catch (error) {
         alert('Failed to load product details');
     }
+}
+
+async function uploadImage() {
+    const fileInput = document.getElementById('p-img-file');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        throw new Error('Please select an image file');
+    }
+
+    const formData = new FormData();
+    formData.append('image', fileInput.files[0]);
+
+    const res = await fetch(`${API_URL}/api/admin/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to upload image');
+    }
+
+    const data = await res.json();
+    return data.imageUrl;
 }
 
 async function handleEditProduct(id) {
@@ -589,22 +647,49 @@ async function handleEditProduct(id) {
     const price = document.getElementById('p-price').value;
     const offer_price = document.getElementById('p-offer-price').value || price;
     const category = document.getElementById('p-cat').value;
-    const image_url = document.getElementById('p-img').value;
     
-    if (!name || !price || !image_url) return alert('Please fill required fields');
+    let image_url = '';
     
     try {
+        if (currentImageSource === 'url') {
+            image_url = document.getElementById('p-img').value;
+        } else {
+            const fileInput = document.getElementById('p-img-file');
+            if (fileInput.files.length > 0) {
+                showPreloader();
+                image_url = await uploadImage();
+            } else {
+                image_url = document.getElementById('p-img-preview').src;
+                // If the preview src is a data URL, it means it hasn't been uploaded yet (though in Edit mode it should be a real URL initially)
+                if (image_url.startsWith('data:')) {
+                    showPreloader();
+                    image_url = await uploadImage();
+                }
+            }
+        }
+
+        if (!name || !price || !image_url) {
+            hidePreloader();
+            return alert('Please fill required fields');
+        }
+        
         const res = await fetchWithTimeout(`${API_URL}/api/admin/products/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, description, price, offer_price, category, image_url })
         });
+        
         if (res.ok) {
             alert('Product updated successfully');
             loadProducts();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'Failed to update product');
         }
     } catch (error) {
-        alert('Failed to update product');
+        alert(error.message || 'An error occurred');
+    } finally {
+        hidePreloader();
     }
 }
 
@@ -641,16 +726,68 @@ function showAddProduct() {
                     <option value="accessories">Accessories</option>
                 </select>
             </div>
+            
             <div class="form-group" style="margin-bottom: 30px;">
-                <label style="display: block; font-weight: 800; margin-bottom: 8px;">IMAGE URL</label>
-                <input type="text" id="p-img" class="brutal-input" style="width: 100%; border: 3px solid #000; padding: 12px; font-weight: 700;" placeholder="https://unsplash.com/...">
+                <label style="display: block; font-weight: 800; margin-bottom: 8px;">IMAGE UPLOAD TYPE</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button id="btn-img-url" class="btn" onclick="toggleImageSource('url')" style="flex: 1; border: 3px solid #000; padding: 10px; font-weight: 800; background: #FFD100;">URL</button>
+                    <button id="btn-img-file" class="btn" onclick="toggleImageSource('file')" style="flex: 1; border: 3px solid #000; padding: 10px; font-weight: 800; background: #eee;">LOCAL DISK</button>
+                </div>
+                
+                <div id="img-url-container">
+                    <label style="display: block; font-weight: 800; margin-bottom: 8px;">IMAGE URL</label>
+                    <input type="text" id="p-img" class="brutal-input" style="width: 100%; border: 3px solid #000; padding: 12px; font-weight: 700;" placeholder="https://unsplash.com/...">
+                </div>
+                
+                <div id="img-file-container" style="display: none;">
+                    <label style="display: block; font-weight: 800; margin-bottom: 8px;">SELECT IMAGE</label>
+                    <input type="file" id="p-img-file" accept="image/*" class="brutal-input" style="width: 100%; border: 3px solid #000; padding: 12px; font-weight: 700; background: #fff;">
+                    <div id="img-preview" style="margin-top: 10px; display: none;">
+                        <img id="p-img-preview" src="" style="width: 100px; height: 100px; object-fit: cover; border: 2px solid #000;">
+                    </div>
+                </div>
             </div>
+
             <div style="display: flex; gap: 15px;">
                 <button class="btn btn-primary" style="flex: 1; background: #FFD100; border: 3px solid #000; padding: 15px; font-weight: 900; cursor: pointer;" onclick="handleAddProduct()">ADD PRODUCT</button>
                 <button class="btn" style="flex: 1; background: #eee; border: 3px solid #000; padding: 15px; font-weight: 900; cursor: pointer;" onclick="loadProducts()">CANCEL</button>
             </div>
         </div>
     `;
+    
+    // Add file preview listener
+    document.getElementById('p-img-file')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('p-img-preview').src = e.target.result;
+                document.getElementById('img-preview').style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+let currentImageSource = 'url';
+window.toggleImageSource = function(type) {
+    currentImageSource = type;
+    const urlContainer = document.getElementById('img-url-container');
+    const fileContainer = document.getElementById('img-file-container');
+    const btnUrl = document.getElementById('btn-img-url');
+    const btnFile = document.getElementById('btn-img-file');
+    
+    if (type === 'url') {
+        urlContainer.style.display = 'block';
+        fileContainer.style.display = 'none';
+        btnUrl.style.background = '#FFD100';
+        btnFile.style.background = '#eee';
+    } else {
+        urlContainer.style.display = 'none';
+        fileContainer.style.display = 'block';
+        btnUrl.style.background = '#eee';
+        btnFile.style.background = '#FFD100';
+    }
 }
 
 async function handleAddProduct() {
@@ -659,22 +796,39 @@ async function handleAddProduct() {
     const price = document.getElementById('p-price').value;
     const offer_price = document.getElementById('p-offer-price').value || price;
     const category = document.getElementById('p-cat').value;
-    const image_url = document.getElementById('p-img').value;
     
-    if (!name || !price || !image_url) return alert('Please fill required fields');
+    let image_url = '';
     
     try {
+        if (currentImageSource === 'url') {
+            image_url = document.getElementById('p-img').value;
+        } else {
+            showPreloader();
+            image_url = await uploadImage();
+        }
+        
+        if (!name || !price || !image_url) {
+            hidePreloader();
+            return alert('Please fill required fields');
+        }
+        
         const res = await fetchWithTimeout(`${API_URL}/api/admin/products`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, description, price, offer_price, category, image_url })
         });
+        
         if (res.ok) {
             alert('Product added successfully');
             loadProducts();
+        } else {
+            const err = await res.json();
+            alert(err.error || 'Failed to add product');
         }
     } catch (error) {
-        alert('Failed to add product');
+        alert(error.message || 'An error occurred');
+    } finally {
+        hidePreloader();
     }
 }
 

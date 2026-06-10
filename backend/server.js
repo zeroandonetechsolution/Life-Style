@@ -63,6 +63,32 @@ app.use(express.static(path.join(__dirname, '..'), {
     }
 }));
 
+// Serve uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Multer storage configuration
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'uploads/'));
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only images are allowed'));
+        }
+    }
+});
+
 // Database setup
 let db;
 (async () => {
@@ -349,6 +375,14 @@ io.on('connection', (socket) => {
 });
 
 // Admin Routes
+app.post('/api/admin/upload', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+    const imageUrl = `/uploads/${req.file.filename}`;
+    res.json({ imageUrl, success: true });
+});
+
 app.get('/api/admin/orders', async (req, res) => {
     try {
         const orders = await db.all('SELECT * FROM orders ORDER BY created_at DESC');
