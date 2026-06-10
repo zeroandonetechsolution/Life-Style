@@ -1,7 +1,9 @@
 // Admin State
 let adminToken = localStorage.getItem('lifestyle_admin_token') || null;
-// Determine API URL: Use current hostname but port 3001 if not already on it
-const API_URL = window.location.port === '3001' ? '' : `${window.location.protocol}//${window.location.hostname}:3001`;
+// Determine API URL: Use port 3000 for localhost, otherwise current origin
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? `${window.location.protocol}//${window.location.hostname}:3000` 
+    : window.location.origin;
 
 // Cache for optimized loading
 const cache = {
@@ -29,66 +31,123 @@ async function fetchWithTimeout(resource, options = {}) {
     }
 }
 
-const adminPageStartTime = Date.now();
-document.addEventListener('DOMContentLoaded', () => {
+// Preloader UI Helpers
+function showPreloader() {
+    const content = document.getElementById('admin-content');
+    if (content) {
+        content.style.opacity = '0.5';
+    }
+}
+
+function hidePreloader() {
+    const content = document.getElementById('admin-content');
+    if (content) {
+        content.style.opacity = '1';
+    }
+}
+
+// Global initialization
+function init() {
     if (!adminToken) {
         showLogin();
     } else {
         initAdminShell();
         showDashboard();
     }
-    
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        const elapsed = Date.now() - adminPageStartTime;
-        const remaining = Math.max(0, 5500 - elapsed);
-        setTimeout(() => preloader.classList.add('fade-out'), remaining);
-    }
-});
-
-function showPreloader() {
-    const preloader = document.getElementById('preloader');
-    if (preloader) preloader.classList.remove('fade-out');
 }
 
-function hidePreloader() {
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        setTimeout(() => {
-            preloader.classList.add('fade-out');
-        }, 1000); // Shorter delay for tab transitions
-    }
+// Run init when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
 }
 
 function initAdminShell() {
-    document.body.innerHTML = `
-        <header class="header" style="background: #fff; border-bottom: 4px solid #000; padding: 15px 40px; position: sticky; top: 0; z-index: 1000;">
-            <div class="header-container" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-                <div class="logo"><h1 style="font-weight: 900; background: #FFD100; padding: 5px 15px; border: 3px solid #000; box-shadow: 4px 4px 0px #000;">Life Style Admin</h1></div>
-                <nav class="nav">
-                    <ul class="nav-links" style="display: flex; gap: 30px; list-style: none;">
+    const root = document.getElementById('admin-root') || document.body;
+    root.innerHTML = `
+        <header class="header admin-header" style="background: #fff; border-bottom: 4px solid #000; padding: 15px 20px; position: sticky; top: 0; z-index: 1000;">
+            <div class="header-container" style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="admin-menu-btn" onclick="toggleAdminMenu()" style="background: none; border: 3px solid #000; padding: 8px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 3px 3px 0px #000;">
+                        <i class="fas fa-bars" style="font-size: 1.2rem;"></i>
+                    </button>
+                    <div class="logo"><h1 style="font-weight: 900; background: #FFD100; padding: 5px 15px; border: 3px solid #000; box-shadow: 4px 4px 0px #000; font-size: 1.2rem; margin: 0;">Life Style Admin</h1></div>
+                </div>
+                <nav class="nav admin-desktop-nav">
+                    <ul class="nav-links admin-nav-links" style="display: flex; gap: 15px; list-style: none; margin: 0; padding: 0;">
                         <li><a href="javascript:void(0)" onclick="showDashboard()" class="admin-nav-link" id="nav-dashboard">Dashboard</a></li>
                         <li><a href="javascript:void(0)" onclick="loadOrders()" class="admin-nav-link" id="nav-orders">Orders</a></li>
                         <li><a href="javascript:void(0)" onclick="loadProducts()" class="admin-nav-link" id="nav-products">Products</a></li>
-                        <li><a href="index.html" style="text-decoration: none; color: #000; font-weight: 800; text-transform: uppercase;">View Site</a></li>
-                        <li><a href="javascript:void(0)" onclick="logout()" style="text-decoration: none; color: #000; font-weight: 800; text-transform: uppercase;">Logout</a></li>
+                        <li><a href="index.html" class="admin-nav-link" style="color: #000;">Site</a></li>
+                        <li><a href="javascript:void(0)" onclick="logout()" class="admin-nav-link" style="color: #FF007A;">Logout</a></li>
                     </ul>
                 </nav>
             </div>
         </header>
-        <main style="padding: 40px; max-width: 1400px; margin: 0 auto;">
+
+        <!-- Mobile Menu Drawer -->
+        <div id="admin-mobile-drawer" style="position: fixed; top: 0; left: -100%; width: 280px; height: 100vh; background: #fff; z-index: 5000; border-right: 5px solid #000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 30px; display: flex; flex-direction: column; gap: 20px; box-shadow: 10px 0 0 rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-weight: 900; font-size: 1.5rem; margin: 0;">MENU</h2>
+                <button onclick="toggleAdminMenu()" style="background: none; border: 3px solid #000; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 3px 3px 0px #000;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                <li><a href="javascript:void(0)" onclick="showDashboard(); toggleAdminMenu();" class="mobile-nav-link" style="display: block; padding: 15px; border: 3px solid #000; font-weight: 800; text-decoration: none; color: #000; background: #fff; box-shadow: 4px 4px 0px #000;">DASHBOARD</a></li>
+                <li><a href="javascript:void(0)" onclick="loadOrders(); toggleAdminMenu();" class="mobile-nav-link" style="display: block; padding: 15px; border: 3px solid #000; font-weight: 800; text-decoration: none; color: #000; background: #fff; box-shadow: 4px 4px 0px #000;">ORDERS</a></li>
+                <li><a href="javascript:void(0)" onclick="loadProducts(); toggleAdminMenu();" class="mobile-nav-link" style="display: block; padding: 15px; border: 3px solid #000; font-weight: 800; text-decoration: none; color: #000; background: #fff; box-shadow: 4px 4px 0px #000;">PRODUCTS</a></li>
+                <li><a href="index.html" style="display: block; padding: 15px; border: 3px solid #000; font-weight: 800; text-decoration: none; color: #000; background: #00E0FF; box-shadow: 4px 4px 0px #000;">VIEW WEBSITE</a></li>
+                <li><a href="javascript:void(0)" onclick="logout()" style="display: block; padding: 15px; border: 3px solid #000; font-weight: 800; text-decoration: none; color: #fff; background: #FF007A; box-shadow: 4px 4px 0px #000; margin-top: 20px;">LOGOUT</a></li>
+            </ul>
+        </div>
+        <div id="admin-menu-overlay" onclick="toggleAdminMenu()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 4999; display: none;"></div>
+
+        <main class="admin-main" style="padding: 20px; max-width: 1400px; margin: 0 auto;">
             <div id="admin-content"></div>
         </main>
     `;
     
-    // Add active state styles
+    // Add mobile-responsive styles
     const style = document.createElement('style');
     style.textContent = `
-        .admin-nav-link { text-decoration: none; color: #000; font-weight: 800; text-transform: uppercase; padding: 5px 10px; transition: all 0.2s; }
-        .admin-nav-link:hover { background: #00E0FF; }
+        .admin-nav-link { text-decoration: none; color: #000; font-weight: 800; text-transform: uppercase; padding: 8px 12px; transition: all 0.2s; font-size: 0.8rem; border: 2px solid transparent; }
+        .admin-nav-link:hover { background: #00E0FF; border-color: #000; }
         .admin-nav-link.active { background: #FFD100; border: 2px solid #000; box-shadow: 2px 2px 0px #000; }
+        
+        .mobile-nav-link:hover { background: #FFD100 !important; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000 !important; }
+        
+        @media (max-width: 768px) {
+            #admin-menu-btn { display: flex !important; }
+            .admin-desktop-nav { display: none !important; }
+            .admin-header { padding: 10px 15px !important; }
+            .admin-header .header-container { justify-content: flex-start !important; }
+            .stats-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
+            .section-header h2 { font-size: 1.8rem !important; }
+            .admin-main { padding: 15px !important; }
+            .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -15px; padding: 0 15px; }
+            table { min-width: 600px; }
+            .card { padding: 20px !important; }
+            .product-card { margin-bottom: 20px; }
+        }
     `;
     document.head.appendChild(style);
+}
+
+// Global toggle for admin menu
+window.toggleAdminMenu = function() {
+    const drawer = document.getElementById('admin-mobile-drawer');
+    const overlay = document.getElementById('admin-menu-overlay');
+    if (drawer.style.left === '0px') {
+        drawer.style.left = '-100%';
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    } else {
+        drawer.style.left = '0px';
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function updateActiveNav(id) {
@@ -98,7 +157,8 @@ function updateActiveNav(id) {
 }
 
 function showLogin() {
-    document.body.innerHTML = `
+    const root = document.getElementById('admin-root') || document.body;
+    root.innerHTML = `
         <div class="admin-login-container" style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #f4f4f4;">
             <div class="card" style="width: 400px; max-width: 90%; padding: 40px; border: 5px solid #000; background: #fff; box-shadow: 10px 10px 0px #000;">
                 <h2 style="margin-bottom: 20px; font-size: 2rem; font-weight: 900;">ADMIN LOGIN</h2>
@@ -134,6 +194,8 @@ async function showDashboard() {
     showPreloader();
     updateActiveNav('dashboard');
     const content = document.getElementById('admin-content');
+    if (!content) return;
+    
     content.innerHTML = `
         <div class="section-header" style="border-bottom: 4px solid #000; margin-bottom: 30px; padding-bottom: 10px;"><h2 style="font-size: 2.5rem; font-weight: 900;">DASHBOARD</h2></div>
         <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 40px;">
@@ -195,6 +257,10 @@ async function loadStats() {
             if (!orders) orders = results[resultIdx++];
         }
         
+        // Final fallback if fetch failed but didn't throw (rare)
+        if (!stats) stats = cache.stats || { totalSales: 0, totalOrders: 0, pendingOrders: 0 };
+        if (!orders) orders = cache.orders || [];
+
         document.getElementById('stat-sales').innerText = `₹${stats.totalSales || 0}`;
         document.getElementById('stat-orders').innerText = stats.totalOrders || 0;
         document.getElementById('stat-pending').innerText = stats.pendingOrders || 0;
@@ -202,10 +268,16 @@ async function loadStats() {
         renderRecentOrders(orders);
     } catch (error) {
         console.error('Stats error:', error);
-        if (document.getElementById('stat-sales')) {
-            document.getElementById('stat-sales').innerText = 'Error';
-            document.getElementById('stat-orders').innerText = 'Error';
-            document.getElementById('stat-pending').innerText = 'Error';
+        // Fallback to cache or zeros so UI isn't empty
+        const fallbackStats = cache.stats || { totalSales: 0, totalOrders: 0, pendingOrders: 0 };
+        const fallbackOrders = cache.orders || [];
+        
+        const salesEl = document.getElementById('stat-sales');
+        if (salesEl) {
+            salesEl.innerText = `₹${fallbackStats.totalSales}`;
+            document.getElementById('stat-orders').innerText = fallbackStats.totalOrders;
+            document.getElementById('stat-pending').innerText = fallbackStats.pendingOrders;
+            renderRecentOrders(fallbackOrders);
         }
     }
 }
@@ -222,8 +294,9 @@ function renderRecentOrders(orders) {
     }
     
     container.innerHTML = `
-        <table style="width: 100%; border-collapse: collapse; border: 4px solid #000;">
-            <thead style="background: #000; color: #fff;">
+        <div class="table-container">
+            <table style="width: 100%; border-collapse: collapse; border: 4px solid #000;">
+                <thead style="background: #000; color: #fff;">
                 <tr>
                     <th style="padding: 15px; text-align: left;">ORDER ID</th>
                     <th style="padding: 15px; text-align: left;">CUSTOMER</th>
@@ -246,6 +319,7 @@ function renderRecentOrders(orders) {
                 `).join('')}
             </tbody>
         </table>
+        </div>
     `;
 }
 
@@ -326,7 +400,7 @@ async function loadOrders() {
                         </div>
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; border-top: 3 solid #000; padding-top: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 20px; border-top: 3px solid #000; padding-top: 20px;">
                     <div>
                         <h5 style="font-weight: 900; margin-bottom: 10px; text-transform: uppercase;">Items</h5>
                         ${(order.items || []).map(item => `
@@ -381,11 +455,11 @@ async function loadProducts() {
     updateActiveNav('products');
     const content = document.getElementById('admin-content');
     content.innerHTML = `
-        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; margin-bottom: 30px; padding-bottom: 10px;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #000; margin-bottom: 30px; padding-bottom: 10px; flex-wrap: wrap; gap: 10px;">
             <h2 style="font-size: 2.5rem; font-weight: 900;">PRODUCTS</h2>
             <button class="btn btn-primary" onclick="showAddProduct()" style="background: #FFD100; border: 3px solid #000; padding: 10px 20px; font-weight: 900; cursor: pointer;">ADD PRODUCT</button>
         </div>
-        <div id="products-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px;">Loading...</div>
+        <div id="products-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">Loading...</div>
     `;
     
     try {

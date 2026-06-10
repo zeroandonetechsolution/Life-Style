@@ -46,6 +46,7 @@
                 </button>
                 <button class="icon-btn menu-btn" aria-label="Menu" id="mobile-menu-btn">
                     <i class="fas fa-bars"></i>
+                    <span class="menu-text">MENU</span>
                 </button>
             </div>
         </div>
@@ -85,13 +86,45 @@
     </div>
 
     <div class="mobile-menu" id="mobile-menu">
-        <button class="close-menu-btn" id="close-menu-btn">&times;</button>
+        <button class="close-menu-btn" id="close-menu-btn"><i class="fas fa-times"></i></button>
+        <div style="padding: 25px 25px 0 25px;">
+            <div class="brutal-input-container" style="position: relative;">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.5;"></i>
+                <input type="text" class="brutal-input" placeholder="SEARCH ITEMS..." style="padding-left: 45px; margin-bottom: 0;" id="mobile-search-input">
+            </div>
+        </div>
         <ul class="mobile-nav-links">
-            <li><a href="collections.html?category=new">New Arrivals</a></li>
-            <li><a href="perfumes.html">Perfumes</a></li>
-            <li><a href="slippers.html">Slippers</a></li>
-            <li><a href="collections.html">Full Collection</a></li>
+            <div class="section-title">Quick Actions</div>
+            <li><a href="javascript:void(0)" onclick="window.toggleTheme(); document.getElementById('mobile-menu').classList.remove('active');"><i class="fas fa-moon"></i> Toggle Theme <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="document.getElementById('auth-modal').classList.add('active'); document.getElementById('auth-overlay').classList.add('active'); document.getElementById('mobile-menu').classList.remove('active');"><i class="fas fa-user-circle"></i> Login / Profile <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="orders.html"><i class="fas fa-truck"></i> Track Order <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openCart(); document.getElementById('mobile-menu').classList.remove('active');"><i class="fas fa-shopping-bag"></i> Your Bag <span class="cart-badge" id="mobile-cart-badge" style="position: static; margin-left: 10px; display: none;">0</span> <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+
+            <div class="section-title">Categories</div>
+            <li><a href="perfumes.html"><i class="fas fa-flask"></i> Perfumes</a></li>
+            <li><a href="slippers.html"><i class="fas fa-shoe-prints"></i> Slippers</a></li>
+            <li><a href="accessories.html"><i class="fas fa-gem"></i> Accessories</a></li>
+            
+            <div class="section-title">Account Settings</div>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('plus')"><i class="fas fa-crown" style="color: #FFD100;"></i> Life Style Plus <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('devices')"><i class="fas fa-mobile-alt" style="color: #000;"></i> Manage Devices <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('profile')"><i class="fas fa-user-edit" style="color: #000;"></i> Edit Profile <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('cards')"><i class="fas fa-credit-card" style="color: #000;"></i> Saved Cards & Gift Cards <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('addresses')"><i class="fas fa-map-marker-alt" style="color: #000;"></i> Saved Addresses <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('language')"><i class="fas fa-language" style="color: #000;"></i> Language <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('notifications')"><i class="fas fa-bell" style="color: #000;"></i> Notifications <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            
+            <div class="section-title">My Activity</div>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('reviews')"><i class="fas fa-pen-nib" style="color: #000;"></i> My Reviews <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('qa')"><i class="fas fa-question-circle" style="color: #000;"></i> Q&A <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+
+            <div class="section-title">Support</div>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('policies')"><i class="fas fa-file-contract" style="color: #000;"></i> Policies & Licenses <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
+            <li><a href="javascript:void(0)" onclick="window.openSettings('faqs')"><i class="fas fa-info-circle" style="color: #000;"></i> FAQs <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 0.8rem; color: #ccc;"></i></a></li>
         </ul>
+        <div class="logout-btn-container">
+            <button class="logout-btn" onclick="window.logoutUser()">Log Out</button>
+        </div>
     </div>
 
     <!-- Cartesian Drawer -->
